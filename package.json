@@ -1,0 +1,13 @@
+{
+  "name": "hektiq-runner",
+  "version": "0.1.0",
+  "description": "Give AI only the facts it needs from a webpage, not the whole page.",
+  "type": "module",
+  "bin": { "hektiq-runner": "src/cli.js" },
+  "scripts": {
+    "test": "node --test --test-reporter=dot test/*.test.js",
+    "try": "node src/cli.js"
+  },
+  "engines": { "node": ">=20" },
+  "license": "MIT"
+}
