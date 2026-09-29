@@ -7,6 +7,7 @@ const CASES = [
   ['https://www.bhphotovideo.com/c/product/1793602-REG/sony_1000040597_playstation_5_slim_console.html', 'name,price,currency,availability,brand,sku'],
   ['https://www.imdb.com/title/tt0111161/', 'name,rating,date,description'],
   ['https://www.eventbrite.com/d/la--new-orleans/events/', 'name,date,description'],
+  ['https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html', 'name,price,availability'],
   ['https://www.bbc.com/news', 'name,description,image'],
   ['https://en.wikipedia.org/wiki/PlayStation_5', 'name,description,author,date'],
 ];

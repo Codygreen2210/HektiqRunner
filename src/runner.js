@@ -116,10 +116,44 @@ function extractField(field, parsed) {
     const v = clean(field, parsed.meta[k]);
     if (v !== undefined) return { value: v, method: 'meta', path: k, confidence: 0.8 };
   }
+  const h = parsed.html?.[field];
+  if (h) return { ...h, value: clean(field, h.value), method: 'html' };
   if (field === 'name' && parsed.meta['<title>']) {
     return { value: parsed.meta['<title>'], method: 'html-title', path: '<title>', confidence: 0.5 };
   }
   return null;
+}
+
+// Last cheap step before giving up: read the visible HTML. Lower confidence on purpose.
+const MICRODATA = { name: 'name', price: 'price', currency: 'priceCurrency', availability: 'availability', brand: 'brand', sku: 'sku', rating: 'ratingValue', reviews: 'reviewCount', phone: 'telephone', address: 'streetAddress', date: 'datePublished', author: 'author' };
+const strip = (s) => s.replace(/<[^>]+>/g, ' ').replace(/&nbsp;|&#160;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+
+export function parseHtml(html) {
+  const out = {};
+  const body = html.replace(/<(script|style|noscript|svg)[\s\S]*?<\/\1>/gi, ' ');
+  // Microdata: <span itemprop="price">499.99</span>
+  for (const [field, prop] of Object.entries(MICRODATA)) {
+    const m = new RegExp(`itemprop=["']${prop}["'][^>]*>([^<]{1,200})<`, 'i').exec(body);
+    if (m && strip(m[1])) out[field] = { value: strip(m[1]), path: `itemprop=${prop}`, confidence: 0.75 };
+  }
+  const h1 = /<h1[^>]*>([\s\S]*?)<\/h1>/i.exec(body);
+  if (!out.name && h1 && strip(h1[1])) out.name = { value: strip(h1[1]).slice(0, 200), path: '<h1>', confidence: 0.6 };
+  const tel = /href=["']tel:([+\d().\s-]{7,20})["']/i.exec(body);
+  if (!out.phone && tel) out.phone = { value: tel[1].trim(), path: 'a[href^=tel]', confidence: 0.7 };
+  const time = /<time[^>]*datetime=["']([^"']+)["']/i.exec(body);
+  if (!out.date && time) out.date = { value: time[1], path: '<time datetime>', confidence: 0.5 };
+  // Price: only trust it when one amount clearly dominates the page.
+  if (!out.price) {
+    const prices = [...strip(body).matchAll(/\$\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)(?!\d)/g)].map((m) => m[1].replace(/,/g, ''));
+    const counts = {};
+    for (const p of prices) counts[p] = (counts[p] || 0) + 1;
+    const [top, n] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0] || [];
+    if (top && (Object.keys(counts).length === 1 || n / prices.length >= 0.5)) {
+      out.price = { value: top, path: `most common $ amount (${n}/${prices.length})`, confidence: 0.4 };
+      if (!out.currency) out.currency = { value: 'USD', path: '$ sign', confidence: 0.4 };
+    }
+  }
+  return out;
 }
 
 // Don't report facts from error pages or bot walls ("Just a moment...").
@@ -148,6 +182,7 @@ export class Runner {
       retrievedAt: new Date().toISOString(),
       jsonld: parseJsonLd(html),
       meta: parseMeta(html),
+      html: parseHtml(html),
       known: {},
     };
   }
