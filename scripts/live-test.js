@@ -3,7 +3,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { Runner } from '../src/runner.js';
 
 const CASES = [
-  ['https://www.allrecipes.com/recipe/10813/best-chocolate-chip-cookies/', 'name,author,rating,reviews,date'],
+  ['https://www.allrecipes.com/recipe/10813/best-chocolate-chip-cookies/', 'name,author,rating,reviews,date,totalTime,servings'],
   ['https://www.bhphotovideo.com/c/product/1793602-REG/sony_1000040597_playstation_5_slim_console.html', 'name,price,currency,availability,brand,sku'],
   ['https://www.imdb.com/title/tt0111161/', 'name,rating,date,description'],
   ['https://www.eventbrite.com/d/la--new-orleans/events/', 'name,date,description'],
@@ -21,7 +21,7 @@ for (const [url, fields] of CASES) {
     for (const u of out.unknown) lines.push(`- **${u.field}**: unknown — ${u.reason}`);
     const s = out.stats;
     lines.push('', `Page ${(s.pageBytes / 1024).toFixed(1)} KB → answer ${(s.contextBytes / 1024).toFixed(1)} KB (${s.reduction} smaller), ${s.fetchMs} ms via ${s.via}`, '');
-    if (s.pageBytes > 2048) { totalPage += s.pageBytes; totalAnswer += s.contextBytes; }
+    if (s.reduction !== 'n/a') { totalPage += s.pageBytes; totalAnswer += s.contextBytes; }
   } catch (e) {
     lines.push(`- fetch failed: ${e.message}`, '');
   }

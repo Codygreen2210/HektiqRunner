@@ -10,7 +10,7 @@ const FIELD_PATHS = {
   sku: ['sku', 'gtin13', 'gtin12', 'mpn'],
   model: ['model', 'mpn'],
   rating: ['aggregateRating.ratingValue'],
-  reviews: ['aggregateRating.reviewCount'],
+  reviews: ['aggregateRating.reviewCount', 'aggregateRating.ratingCount'],
   address: ['address', 'location.address'],
   phone: ['telephone'],
   hours: ['openingHours', 'openingHoursSpecification'],
@@ -19,6 +19,13 @@ const FIELD_PATHS = {
   description: ['description'],
   author: ['author.name', 'author'],
   date: ['datePublished', 'startDate'],
+  endDate: ['endDate'],
+  location: ['location.name', 'location.address', 'location'],
+  cookTime: ['cookTime'],
+  totalTime: ['totalTime'],
+  servings: ['recipeYield'],
+  ingredients: ['recipeIngredient'],
+  priceRange: ['priceRange'],
 };
 
 const META_KEYS = {
@@ -188,8 +195,8 @@ export class Runner {
       pageBytes: parsed.bytes,
       downloadedNow: fetched ? parsed.bytes : 0,
       contextBytes,
-      reduction: parsed.bytes > contextBytes ? `${(100 * (1 - contextBytes / parsed.bytes)).toFixed(1)}%` : 'n/a',
-      approxTokensSaved: Math.max(0, Math.round((parsed.bytes - contextBytes) / 4)),
+      reduction: !blocked && parsed.bytes > contextBytes ? `${(100 * (1 - contextBytes / parsed.bytes)).toFixed(1)}%` : 'n/a',
+      approxTokensSaved: blocked ? 0 : Math.max(0, Math.round((parsed.bytes - contextBytes) / 4)),
       reusedFields: reused,
       fetchMs: fetched ? parsed.ms : 0,
       via: parsed.via, // 'fetch' (cheap) or 'browser' (fallback)
