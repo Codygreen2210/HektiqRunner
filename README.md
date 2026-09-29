@@ -48,3 +48,14 @@ Add this to your MCP client config (Claude Desktop, Claude Code, etc.):
 ```
 
 The AI gets one tool, `get_facts(url, fields)`.
+
+## Look at a page (screenshot checker)
+
+Gives an AI eyes on a page. Takes phone and desktop screenshots in light and dark mode and lists problems a person would notice: sideways scrolling, broken images, script errors, hard-to-read text, tiny tap targets, buttons with no label.
+
+```
+npm i playwright && npx playwright install chromium
+node src/look-cli.js https://example.com
+```
+
+Screenshots and `report.md` land in `shots/`. From your phone: GitHub → Actions → **Look at a page** → Run workflow, then results land in `results/look/`. As an MCP tool it's `look_at_page(url)`, which returns the issues plus the screenshot.

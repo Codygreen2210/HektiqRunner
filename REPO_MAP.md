@@ -7,6 +7,7 @@
   - `class Runner` → `run(url, fields)`: caches each page, reuses known facts on follow-ups, returns `{facts, unknown, stats}`.
 - `src/mcp.js` — zero-dependency MCP stdio server, one tool: `get_facts(url, fields)`.
 - `src/browser.js` — optional Playwright fallback (blocks images/fonts/css). Runner calls it only when fetch is blocked/empty.
+- `src/look.js` + `src/look-cli.js` — screenshot checker: phone/desktop × light/dark, screenshots + issue list (sideways scroll, broken images, console errors, low contrast, tiny taps, unlabeled buttons, no viewport tag). MCP tool `look_at_page`. `.github/workflows/look.yml` runs it on any URL → `results/look/`.
 - `src/cli.js` — `node src/cli.js <url> <fields> [--full]`.
 - `scripts/live-test.js` + `.github/workflows/live-test.yml` — real-site test, run from GitHub Actions tab; results land in `results/live-test.md`.
 - `test/runner.test.js` + `test/fixtures/` — offline tests with a fake fetch.
