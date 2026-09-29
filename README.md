@@ -29,7 +29,7 @@ page 312.4 KB -> answer 0.5 KB (99.8% smaller, ~79800 tokens saved)
 
 Add `--full` for the JSON output an agent would receive.
 
-Fields: name, price, currency, availability, brand, sku, model, rating, reviews, address, phone, hours, url, image, description, author, date.
+Fields: name, price, currency, availability, brand, sku, model, rating, reviews, address, phone, hours, url, image, description, author, date, endDate, location, cookTime, totalTime, servings, ingredients, priceRange.
 
 ## Status
 
