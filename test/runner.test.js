@@ -65,6 +65,27 @@ test('reports when browser fallback also fails', async () => {
   assert.match(out.unknown[0].reason, /browser fallback failed: timeout/);
 });
 
+test('HTML fallback on pages with no structured data, with lower confidence', async () => {
+  const plain = readFileSync(new URL('./fixtures/plain.html', import.meta.url), 'utf8');
+  const f = async () => ({ status: 200, text: async () => plain });
+  const out = await new Runner({ fetchImpl: f, browser: 'off' }).run(URL_, ['name', 'price', 'sku', 'phone', 'date', 'rating']);
+  assert.equal(out.facts.name.value, 'Milwaukee M18 Drill Kit');
+  assert.equal(out.facts.price.value, 199);
+  assert.ok(out.facts.price.confidence < 0.5);
+  assert.equal(out.facts.sku.value, 'M18-2801');
+  assert.equal(out.facts.phone.value, '+1-504-555-0142');
+  assert.equal(out.facts.date.value, '2026-09-01');
+  assert.equal(out.facts.name.method, 'html');
+  assert.equal(out.unknown[0].field, 'rating');
+});
+
+test('HTML price is not guessed when amounts disagree', async () => {
+  const mixed = '<html><body><h1>Store</h1><p>$10.00 $20.00 $30.00 $40.00</p>' + ' '.repeat(300) + '</body></html>';
+  const f = async () => ({ status: 200, text: async () => mixed });
+  const out = await new Runner({ fetchImpl: f, browser: 'off' }).run(URL_, ['price']);
+  assert.equal(out.unknown[0].field, 'price');
+});
+
 test('falls back to meta tags when JSON-LD lacks a field', async () => {
   const out = await new Runner({ fetchImpl: fakeFetch }).run(URL_, ['description']);
   assert.equal(out.facts.description.method, 'meta');
