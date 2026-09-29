@@ -1,0 +1,22 @@
+name: Live test
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  live-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test --silent
+      - run: node scripts/live-test.js
+      - name: Save results to the repo
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add results/live-test.md
+          git commit -m "Live test results" || echo "no changes"
+          git push
