@@ -38,3 +38,13 @@ Early and small. Works on pages that publish structured data. Pages that don't w
 Built by Cody Green, documenting the build in public.
 
 MIT license.
+
+## Use it as an AI tool (MCP)
+
+Add this to your MCP client config (Claude Desktop, Claude Code, etc.):
+
+```json
+{ "mcpServers": { "hektiq-runner": { "command": "node", "args": ["/path/to/HektiqRunner/src/mcp.js"] } } }
+```
+
+The AI gets one tool, `get_facts(url, fields)`.
