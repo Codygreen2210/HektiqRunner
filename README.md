@@ -33,7 +33,7 @@ Fields: name, price, currency, availability, brand, sku, model, rating, reviews,
 
 ## Status
 
-Early and small. Works on pages that publish structured data. Pages that don't will return `unknown` for now.
+Early and small. Works best on pages that publish structured data. If a page is blocked or loads with JavaScript, it can fall back to a real browser (optional: `npm i playwright && npx playwright install chromium`). Without that, those pages return `unknown` with the reason.
 
 Built by Cody Green, documenting the build in public.
 

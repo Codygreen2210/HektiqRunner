@@ -125,18 +125,17 @@ function blockReason(parsed) {
 }
 
 export class Runner {
-  constructor({ fetchImpl = globalThis.fetch } = {}) {
+  // browser: 'auto' = only open a real browser when the cheap fetch is blocked or empty.
+  constructor({ fetchImpl = globalThis.fetch, browser = 'auto', renderImpl } = {}) {
     this.fetch = fetchImpl;
+    this.browser = browser;
+    this.render = renderImpl; // for tests; otherwise loads src/browser.js on demand
     this.pages = new Map(); // url -> parsed page, so follow-ups never re-download
   }
 
-  async #load(url) {
-    if (this.pages.has(url)) return { parsed: this.pages.get(url), fetched: false };
-    const t0 = Date.now();
-    const res = await this.fetch(url, { headers: { 'user-agent': 'HektiqRunner/0.1 (+https://github.com/Codygreen2210/HektiqRunner)' } });
-    const html = await res.text();
-    const parsed = {
-      status: res.status,
+  #parse(html, status, t0, via) {
+    return {
+      status, via,
       bytes: Buffer.byteLength(html),
       ms: Date.now() - t0,
       retrievedAt: new Date().toISOString(),
@@ -144,6 +143,26 @@ export class Runner {
       meta: parseMeta(html),
       known: {},
     };
+  }
+
+  async #load(url) {
+    if (this.pages.has(url)) return { parsed: this.pages.get(url), fetched: false };
+    let t0 = Date.now();
+    const res = await this.fetch(url, { headers: { 'user-agent': 'HektiqRunner/0.1 (+https://github.com/Codygreen2210/HektiqRunner)' } });
+    let parsed = this.#parse(await res.text(), res.status, t0, 'fetch');
+    const reason = blockReason(parsed);
+    if (reason && this.browser === 'auto') {
+      t0 = Date.now();
+      try {
+        const render = this.render ?? (await import('./browser.js')).render;
+        const page = await render(url);
+        const second = this.#parse(page.html, page.status, t0, 'browser');
+        second.fetchBytes = parsed.bytes;
+        parsed = second;
+      } catch (e) {
+        parsed.browserNote = e.code === 'NO_BROWSER' ? 'browser fallback not installed (npm i playwright)' : `browser fallback failed: ${e.message}`;
+      }
+    }
     this.pages.set(url, parsed);
     return { parsed, fetched: true };
   }
@@ -151,7 +170,7 @@ export class Runner {
   // Get only the fields asked for. Asking again later only fills in what's missing.
   async run(url, fields) {
     const { parsed, fetched } = await this.#load(url);
-    const blocked = blockReason(parsed);
+    const blocked = blockReason(parsed) && [blockReason(parsed), parsed.browserNote].filter(Boolean).join('; ');
     const facts = {};
     const unknown = [];
     let reused = 0;
@@ -160,7 +179,7 @@ export class Runner {
       if (parsed.known[f]) { facts[f] = parsed.known[f]; reused++; continue; }
       if (!FIELD_PATHS[f]) { unknown.push({ field: f, reason: 'field not supported yet' }); continue; }
       const hit = extractField(f, parsed);
-      if (hit) facts[f] = parsed.known[f] = hit;
+      if (hit) facts[f] = parsed.known[f] = { ...hit, via: parsed.via };
       else unknown.push({ field: f, reason: 'page does not expose this in structured data' });
     }
     const answer = { source: new URL(url).hostname, url, retrievedAt: parsed.retrievedAt, facts, unknown };
@@ -173,6 +192,7 @@ export class Runner {
       approxTokensSaved: Math.max(0, Math.round((parsed.bytes - contextBytes) / 4)),
       reusedFields: reused,
       fetchMs: fetched ? parsed.ms : 0,
+      via: parsed.via, // 'fetch' (cheap) or 'browser' (fallback)
     };
     return answer;
   }
