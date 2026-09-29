@@ -1,46 +1,46 @@
-# Live test — 2026-09-29T02:34:09.388Z
+# Live test — 2026-09-29T06:32:13.750Z
 
 ## www.allrecipes.com
 `name,author,rating,reviews,date`
 
-- **name**: unknown — page returned HTTP 402
-- **author**: unknown — page returned HTTP 402
-- **rating**: unknown — page returned HTTP 402
-- **reviews**: unknown — page returned HTTP 402
-- **date**: unknown — page returned HTTP 402
+- **name**: Best Chocolate Chip Cookies _(json-ld)_
+- **author**: Dora _(json-ld)_
+- **rating**: 4.6 _(json-ld)_
+- **date**: 1998-04-18T16:10:32-04:00 _(json-ld)_
+- **reviews**: unknown — page does not expose this in structured data
 
-Page 0.6 KB → answer 0.4 KB (29.1% smaller), 139 ms
+Page 901.7 KB → answer 0.8 KB (99.9% smaller), 7656 ms via browser
 
 ## www.bhphotovideo.com
 `name,price,currency,availability,brand,sku`
 
-- **name**: Just a moment... _(html-title)_
-- **price**: unknown — page returned HTTP 403
-- **currency**: unknown — page returned HTTP 403
-- **availability**: unknown — page returned HTTP 403
-- **brand**: unknown — page returned HTTP 403
-- **sku**: unknown — page returned HTTP 403
+- **name**: unknown — blocked: site returned HTTP 403 (likely bot protection)
+- **price**: unknown — blocked: site returned HTTP 403 (likely bot protection)
+- **currency**: unknown — blocked: site returned HTTP 403 (likely bot protection)
+- **availability**: unknown — blocked: site returned HTTP 403 (likely bot protection)
+- **brand**: unknown — blocked: site returned HTTP 403 (likely bot protection)
+- **sku**: unknown — blocked: site returned HTTP 403 (likely bot protection)
 
-Page 5.7 KB → answer 0.5 KB (90.4% smaller), 139 ms
+Page 28.2 KB → answer 0.7 KB (97.5% smaller), 1435 ms via browser
 
 ## www.imdb.com
 `name,rating,date,description`
 
-- **name**: unknown — page does not expose this in structured data
-- **rating**: unknown — page does not expose this in structured data
-- **date**: unknown — page does not expose this in structured data
-- **description**: unknown — page does not expose this in structured data
+- **name**: unknown — blocked: bot-check page instead of content
+- **rating**: unknown — blocked: bot-check page instead of content
+- **date**: unknown — blocked: bot-check page instead of content
+- **description**: unknown — blocked: bot-check page instead of content
 
-Page 0.0 KB → answer 0.4 KB (n/a smaller), 122 ms
+Page 9.3 KB → answer 0.4 KB (95.5% smaller), 1554 ms via browser
 
 ## www.eventbrite.com
 `name,date,description`
 
-- **name**: Human Verification _(html-title)_
-- **date**: unknown — page returned HTTP 405
-- **description**: unknown — page returned HTTP 405
+- **name**: unknown — blocked: site returned HTTP 405 (likely bot protection)
+- **date**: unknown — blocked: site returned HTTP 405 (likely bot protection)
+- **description**: unknown — blocked: site returned HTTP 405 (likely bot protection)
 
-Page 2.5 KB → answer 0.3 KB (85.9% smaller), 40 ms
+Page 9.7 KB → answer 0.4 KB (95.8% smaller), 1249 ms via browser
 
 ## www.bbc.com
 `name,description,image`
@@ -49,7 +49,7 @@ Page 2.5 KB → answer 0.3 KB (85.9% smaller), 40 ms
 - **description**: Visit BBC News for the latest news, breaking news, video, audio and analysis. BBC News provides trusted World, U.S. and  _(json-ld)_
 - **image**: unknown — page does not expose this in structured data
 
-Page 371.0 KB → answer 0.7 KB (99.8% smaller), 87 ms
+Page 374.5 KB → answer 0.7 KB (99.8% smaller), 173 ms via fetch
 
 ## en.wikipedia.org
 `name,description,author,date`
@@ -59,6 +59,6 @@ Page 371.0 KB → answer 0.7 KB (99.8% smaller), 87 ms
 - **date**: 2008-09-13T03:35:52Z _(json-ld)_
 - **description**: unknown — page does not expose this in structured data
 
-Page 983.4 KB → answer 0.5 KB (99.9% smaller), 29 ms
+Page 983.5 KB → answer 0.6 KB (99.9% smaller), 48 ms via fetch
 
-**Total:** 1363 KB of pages → 2.1 KB of answers
+**Total:** 2307 KB of pages → 3.6 KB of answers
