@@ -6,7 +6,8 @@
   "bin": { "hektiq-runner": "src/cli.js" },
   "scripts": {
     "test": "node --test --test-reporter=dot test/*.test.js",
-    "try": "node src/cli.js"
+    "try": "node src/cli.js",
+    "mcp": "node src/mcp.js"
   },
   "engines": { "node": ">=20" },
   "license": "MIT"
