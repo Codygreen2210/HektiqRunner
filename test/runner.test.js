@@ -79,6 +79,15 @@ test('HTML fallback on pages with no structured data, with lower confidence', as
   assert.equal(out.unknown[0].field, 'rating');
 });
 
+test('HTML price in pounds and stock wording', async () => {
+  const page = '<html><body><h1>A Light in the Attic</h1><p class="price_color">£51.77</p><p>In stock (22 available)</p>' + ' '.repeat(300) + '</body></html>';
+  const f = async () => ({ status: 200, text: async () => page });
+  const out = await new Runner({ fetchImpl: f, browser: 'off' }).run(URL_, ['price', 'currency', 'availability']);
+  assert.equal(out.facts.price.value, 51.77);
+  assert.equal(out.facts.currency.value, 'GBP');
+  assert.equal(out.facts.availability.value, 'in_stock');
+});
+
 test('HTML price is not guessed when amounts disagree', async () => {
   const mixed = '<html><body><h1>Store</h1><p>$10.00 $20.00 $30.00 $40.00</p>' + ' '.repeat(300) + '</body></html>';
   const f = async () => ({ status: 200, text: async () => mixed });
