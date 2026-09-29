@@ -1,0 +1,27 @@
+name: Look at a page
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Page to check (e.g. https://hektiq.com)
+        required: true
+        default: https://hektiq.com
+permissions:
+  contents: write
+jobs:
+  look:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm i --no-save playwright && npx playwright install --with-deps chromium
+      - run: node src/look-cli.js "${{ inputs.url }}" results/look
+      - name: Save screenshots and report to the repo
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add results/look
+          git commit -m "Look: ${{ inputs.url }}" || echo "no changes"
+          git push
