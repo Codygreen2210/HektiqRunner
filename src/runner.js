@@ -142,16 +142,22 @@ export function parseHtml(html) {
   if (!out.phone && tel) out.phone = { value: tel[1].trim(), path: 'a[href^=tel]', confidence: 0.7 };
   const time = /<time[^>]*datetime=["']([^"']+)["']/i.exec(body);
   if (!out.date && time) out.date = { value: time[1], path: '<time datetime>', confidence: 0.5 };
-  // Price: only trust it when one amount clearly dominates the page.
+  // Price: only trust it when one amount (and one currency) clearly dominates the page.
   if (!out.price) {
-    const prices = [...strip(body).matchAll(/\$\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)(?!\d)/g)].map((m) => m[1].replace(/,/g, ''));
+    const SYMBOLS = { $: 'USD', '£': 'GBP', '€': 'EUR' };
+    const prices = [...strip(body).matchAll(/([$£€])\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)(?!\d)/g)].map((m) => `${m[1]}${m[2].replace(/,/g, '')}`);
     const counts = {};
     for (const p of prices) counts[p] = (counts[p] || 0) + 1;
     const [top, n] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0] || [];
     if (top && (Object.keys(counts).length === 1 || n / prices.length >= 0.5)) {
-      out.price = { value: top, path: `most common $ amount (${n}/${prices.length})`, confidence: 0.4 };
-      if (!out.currency) out.currency = { value: 'USD', path: '$ sign', confidence: 0.4 };
+      out.price = { value: top.slice(1), path: `most common ${top[0]} amount (${n}/${prices.length})`, confidence: 0.4 };
+      if (!out.currency) out.currency = { value: SYMBOLS[top[0]], path: `${top[0]} sign`, confidence: 0.4 };
     }
+  }
+  // Availability: plain-English stock wording, only if the page says just one thing.
+  if (!out.availability) {
+    const said = new Set([...strip(body).matchAll(/\b(in stock|out of stock|sold out|pre-?order)\b/gi)].map((m) => m[1].toLowerCase().replace(/[\s-]/g, '_').replace('sold_out', 'out_of_stock')));
+    if (said.size === 1) out.availability = { value: [...said][0], path: 'page text', confidence: 0.5 };
   }
   return out;
 }
