@@ -17,3 +17,4 @@ if (flag === '--full') {
   const s = out.stats;
   console.log(`\npage ${(s.pageBytes / 1024).toFixed(1)} KB -> answer ${(s.contextBytes / 1024).toFixed(1)} KB (${s.reduction} smaller, ~${s.approxTokensSaved} tokens saved)`);
 }
+await (await import('./browser.js')).closeBrowser();

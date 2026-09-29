@@ -12,6 +12,7 @@ jobs:
         with:
           node-version: 22
       - run: npm test --silent
+      - run: npm i --no-save playwright && npx playwright install --with-deps chromium
       - run: node scripts/live-test.js
       - name: Save results to the repo
         run: |

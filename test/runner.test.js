@@ -39,12 +39,30 @@ test('follow-up reuses the page and known facts, no re-download', async () => {
 
 test('bot walls and error pages return unknown, not fake facts', async () => {
   const wall = async () => ({ status: 403, text: async () => '<html><title>Just a moment...</title>' + 'x'.repeat(500) + '</html>' });
-  const out = await new Runner({ fetchImpl: wall }).run(URL_, ['name', 'price']);
+  const out = await new Runner({ fetchImpl: wall, browser: 'off' }).run(URL_, ['name', 'price']);
   assert.deepEqual(out.facts, {});
   assert.match(out.unknown[0].reason, /blocked/);
   const challenge = async () => ({ status: 200, text: async () => '<title>Human Verification</title>' + 'x'.repeat(500) });
-  const out2 = await new Runner({ fetchImpl: challenge }).run(URL_, ['name']);
+  const out2 = await new Runner({ fetchImpl: challenge, browser: 'off' }).run(URL_, ['name']);
   assert.match(out2.unknown[0].reason, /bot-check/);
+});
+
+test('uses the browser only when the cheap fetch fails', async () => {
+  let renders = 0;
+  const renderImpl = async () => { renders++; return { status: 200, html }; };
+  const empty = async () => ({ status: 202, text: async () => '' });
+  const out = await new Runner({ fetchImpl: empty, renderImpl }).run(URL_, ['price']);
+  assert.equal(out.facts.price.value, 499.99);
+  assert.equal(out.facts.price.via, 'browser');
+  await new Runner({ fetchImpl: fakeFetch, renderImpl }).run(URL_, ['price']);
+  assert.equal(renders, 1); // good page never opened a browser
+});
+
+test('reports when browser fallback also fails', async () => {
+  const renderImpl = async () => { throw new Error('timeout'); };
+  const empty = async () => ({ status: 202, text: async () => '' });
+  const out = await new Runner({ fetchImpl: empty, renderImpl }).run(URL_, ['price']);
+  assert.match(out.unknown[0].reason, /browser fallback failed: timeout/);
 });
 
 test('falls back to meta tags when JSON-LD lacks a field', async () => {

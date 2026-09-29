@@ -20,7 +20,7 @@ for (const [url, fields] of CASES) {
     for (const [f, v] of Object.entries(out.facts)) lines.push(`- **${f}**: ${String(v.value).slice(0, 120)} _(${v.method})_`);
     for (const u of out.unknown) lines.push(`- **${u.field}**: unknown — ${u.reason}`);
     const s = out.stats;
-    lines.push('', `Page ${(s.pageBytes / 1024).toFixed(1)} KB → answer ${(s.contextBytes / 1024).toFixed(1)} KB (${s.reduction} smaller), ${s.fetchMs} ms`, '');
+    lines.push('', `Page ${(s.pageBytes / 1024).toFixed(1)} KB → answer ${(s.contextBytes / 1024).toFixed(1)} KB (${s.reduction} smaller), ${s.fetchMs} ms via ${s.via}`, '');
     if (s.pageBytes > 2048) { totalPage += s.pageBytes; totalAnswer += s.contextBytes; }
   } catch (e) {
     lines.push(`- fetch failed: ${e.message}`, '');
@@ -30,3 +30,4 @@ lines.push(`**Total:** ${(totalPage / 1024).toFixed(0)} KB of pages → ${(total
 mkdirSync('results', { recursive: true });
 writeFileSync('results/live-test.md', lines.join('\n') + '\n');
 console.log(lines.join('\n'));
+await (await import('../src/browser.js')).closeBrowser();
