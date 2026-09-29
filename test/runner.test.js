@@ -37,6 +37,16 @@ test('follow-up reuses the page and known facts, no re-download', async () => {
   assert.equal(out.facts.brand.value, 'Sony');
 });
 
+test('bot walls and error pages return unknown, not fake facts', async () => {
+  const wall = async () => ({ status: 403, text: async () => '<html><title>Just a moment...</title>' + 'x'.repeat(500) + '</html>' });
+  const out = await new Runner({ fetchImpl: wall }).run(URL_, ['name', 'price']);
+  assert.deepEqual(out.facts, {});
+  assert.match(out.unknown[0].reason, /blocked/);
+  const challenge = async () => ({ status: 200, text: async () => '<title>Human Verification</title>' + 'x'.repeat(500) });
+  const out2 = await new Runner({ fetchImpl: challenge }).run(URL_, ['name']);
+  assert.match(out2.unknown[0].reason, /bot-check/);
+});
+
 test('falls back to meta tags when JSON-LD lacks a field', async () => {
   const out = await new Runner({ fetchImpl: fakeFetch }).run(URL_, ['description']);
   assert.equal(out.facts.description.method, 'meta');

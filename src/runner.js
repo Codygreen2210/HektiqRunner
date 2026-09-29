@@ -115,6 +115,15 @@ function extractField(field, parsed) {
   return null;
 }
 
+// Don't report facts from error pages or bot walls ("Just a moment...").
+const BOT_TITLES = /just a moment|human verification|access denied|attention required|are you a robot|captcha/i;
+function blockReason(parsed) {
+  if (parsed.status >= 400) return `blocked: site returned HTTP ${parsed.status} (likely bot protection)`;
+  if (BOT_TITLES.test(parsed.meta['<title>'] || '')) return 'blocked: bot-check page instead of content';
+  if (parsed.bytes < 200) return `site returned an empty page (HTTP ${parsed.status}); content likely loads with JavaScript`;
+  return null;
+}
+
 export class Runner {
   constructor({ fetchImpl = globalThis.fetch } = {}) {
     this.fetch = fetchImpl;
@@ -142,15 +151,17 @@ export class Runner {
   // Get only the fields asked for. Asking again later only fills in what's missing.
   async run(url, fields) {
     const { parsed, fetched } = await this.#load(url);
+    const blocked = blockReason(parsed);
     const facts = {};
     const unknown = [];
     let reused = 0;
     for (const f of fields) {
+      if (blocked) { unknown.push({ field: f, reason: blocked }); continue; }
       if (parsed.known[f]) { facts[f] = parsed.known[f]; reused++; continue; }
       if (!FIELD_PATHS[f]) { unknown.push({ field: f, reason: 'field not supported yet' }); continue; }
       const hit = extractField(f, parsed);
       if (hit) facts[f] = parsed.known[f] = hit;
-      else unknown.push({ field: f, reason: parsed.status >= 400 ? `page returned HTTP ${parsed.status}` : 'page does not expose this in structured data' });
+      else unknown.push({ field: f, reason: 'page does not expose this in structured data' });
     }
     const answer = { source: new URL(url).hostname, url, retrievedAt: parsed.retrievedAt, facts, unknown };
     const contextBytes = Buffer.byteLength(JSON.stringify(answer));
